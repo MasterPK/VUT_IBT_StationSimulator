@@ -15,4 +15,5 @@ public interface ISimulator {
 
     String executeRequest(String url) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, IOException;
     void updateStationsUser(Integer stationId);
+    void updateStationsUser(Station station);
 }

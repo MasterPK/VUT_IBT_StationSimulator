@@ -10,10 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Simulator implements ISimulator {
-    private List<Station> stations;
+    private List<Station> stations = new ArrayList<>();
 
     public Simulator() {
-        stations = new ArrayList();
     }
 
     @Override
@@ -44,7 +43,7 @@ public class Simulator implements ISimulator {
     @Override
     public Station getStation(Integer id) {
         for (Station station : stations) {
-            if(station.getId().equals(id)) {
+            if (station.getId().equals(id)) {
                 return station;
             }
         }
@@ -53,6 +52,13 @@ public class Simulator implements ISimulator {
 
     @Override
     public void updateStationsUser(Integer stationId) {
+
+
+    }
+
+    @Override
+    public void updateStationsUser(Station station) {
+
 
     }
 }
