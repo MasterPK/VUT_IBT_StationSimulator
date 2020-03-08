@@ -1,0 +1,30 @@
+GET http://httpbin.org/anything?id=f6ca3e63-7fdb-465d-9e5a-c1104515a7a1&ts=1583585819
+
+<> 2020-03-07T015702.200.json
+
+###
+
+# @no-redirect
+GET http://httpbin.org/status/301
+
+###
+
+GET http://{{host}}/get?show_env={{show_env}}
+Accept: application/json
+
+###
+
+GET https://httpbin.org/get?show_env=1
+Accept: application/json
+
+<> 2020-03-07T015701.200.json
+
+###
+
+GET https://httpbin.org/ip
+Accept: application/json
+
+<> 2020-03-07T015700.200.json
+
+###
+
