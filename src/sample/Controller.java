@@ -1,6 +1,6 @@
 package sample;
 
-import HttpClient.HttpsRequest;
+import http.HttpsRequest;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,6 +9,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import simulator.Simulator;
+import simulator.Station;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,10 +22,14 @@ public class Controller {
     public TextArea responseContentLabel;
     public Button sendButton;
     public ComboBox protocolComboBox;
-
+    public TextField ipTextArea;
+    public TextField stationIdTextArea;
     public TextField urlTextField = new TextField();
+    public ListView<Station> listView;
+
     private TextField responseCode = new TextField();
     private TextField responseContent = new TextField();
+    private Simulator simulator = new Simulator("","");
 
     private void setResponseCodeText(String responseCode) {
         this.responseCode.setText(responseCode);
@@ -36,6 +42,7 @@ public class Controller {
     private String getUrlTextField() {
         return this.urlTextField.getText();
     }
+
 
     @FXML
     private void initialize() throws InterruptedException {
@@ -55,6 +62,19 @@ public class Controller {
         list.add("HTTPS");
         ObservableList<String> protocolList = FXCollections.observableList(list);
         protocolComboBox.setItems(protocolList);
+        listView.setItems(simulator.stations);
+        listView.setCellFactory(param -> new ListCell<Station>() {
+            @Override
+            protected void updateItem(Station item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getId().toString());
+                }
+            }
+        });
     }
 
     /**
@@ -101,6 +121,21 @@ public class Controller {
         Thread thread = new Thread(task);
         thread.setDaemon(true);
         thread.start();
+
+    }
+
+    public void createStation()
+    {
+        try
+        {
+            Station station = new Station(protocolComboBox.getValue().toString(),ipTextArea.getText(),Integer.parseInt(stationIdTextArea.getText()));
+            simulator.addStation(station);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return;
+        }
 
 
 

@@ -1,4 +1,4 @@
-package HttpClient;
+package http;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;

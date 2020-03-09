@@ -1,5 +1,9 @@
-package StationSimulator;
+package simulator;
 
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public interface IStation {
@@ -18,8 +22,9 @@ public interface IStation {
      */
     Integer getId();
 
-    void setIP(String id) throws IllegalArgumentException;
-    String getIP();
+    String getStationIP();
+
+    void setStationIP(String id) throws IllegalArgumentException;
 
 
     List<User> getUsers();
@@ -27,4 +32,7 @@ public interface IStation {
     User getUser(String rfid);
 
     void setUsers(List<User> users);
+
+    boolean checkAccess(String rfid, String pin);
+    void updateStationsUser() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, IOException;
 }
