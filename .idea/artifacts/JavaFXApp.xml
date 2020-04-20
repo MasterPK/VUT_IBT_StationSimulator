@@ -19,6 +19,9 @@
       </element>
       <element id="library" level="application" name="lib" />
       <element id="file-copy" path="$MAVEN_REPOSITORY$/org/jetbrains/annotations/19.0.0/annotations-19.0.0.jar" />
+      <element id="library" level="application" name="org.javatuples:javatuples:1.2" />
+      <element id="library" level="application" name="org.json:json:20190722" />
+      <element id="library" level="application" name="org.junit.jupiter:junit-jupiter:5.5.2" />
     </root>
   </artifact>
 </component>

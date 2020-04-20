@@ -2,13 +2,17 @@ package sample;
 
 import http.HttpsRequest;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.javatuples.Pair;
 import simulator.Simulator;
 import simulator.Station;
 
@@ -26,10 +30,11 @@ public class Controller {
     public TextField stationIdTextArea;
     public TextField urlTextField = new TextField();
     public ListView<Station> listView;
+    public Label selectedStationLabel;
 
     private TextField responseCode = new TextField();
     private TextField responseContent = new TextField();
-    private Simulator simulator = new Simulator("","");
+    public TextField rfidCheckAccessTextField;
 
     private void setResponseCodeText(String responseCode) {
         this.responseCode.setText(responseCode);
@@ -42,7 +47,35 @@ public class Controller {
     private String getUrlTextField() {
         return this.urlTextField.getText();
     }
+    public TextField pinCheckAccessTextField;
+    private Simulator simulator = new Simulator("", "");
 
+    public static void createDialogERR() {
+        ButtonType loginButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Error");
+        dialog.setContentText("Empty or invalid arguments!");
+        dialog.getDialogPane().getButtonTypes().add(loginButtonType);
+        dialog.show();
+    }
+
+    public static void createDialogOK() {
+        ButtonType loginButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Granted");
+        dialog.setContentText("Access granted!");
+        dialog.getDialogPane().getButtonTypes().add(loginButtonType);
+        dialog.show();
+    }
+
+    public static void createDialogNO() {
+        ButtonType loginButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Denied");
+        dialog.setContentText("Access denied!");
+        dialog.getDialogPane().getButtonTypes().add(loginButtonType);
+        dialog.show();
+    }
 
     @FXML
     private void initialize() throws InterruptedException {
@@ -75,14 +108,37 @@ public class Controller {
                 }
             }
         });
+        listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        ObservableList<Station> stations = listView.getSelectionModel().getSelectedItems();
+
+        StringProperty stationIdProperty = new SimpleStringProperty("No station selected!");
+
+        stations.addListener(new ListChangeListener<Station>() {
+            @Override
+            public void onChanged(Change<? extends Station> c) {
+                if (c.getList().isEmpty()) {
+                    stationIdProperty.setValue("No station selected!");
+                } else if (c.getList().size() > 1) {
+                    stationIdProperty.setValue("Error: Multiple stations selected!");
+                } else {
+                    stationIdProperty.setValue(c.getList().get(0).getId().toString());
+                }
+            }
+        });
+        selectedStationLabel.textProperty().bindBidirectional(stationIdProperty);
+
+        Station station = new Station("https","192.168.1.11",1);
+        simulator.addStation(station);
+        station = new Station("https","192.168.1.11",2);
+        simulator.addStation(station);
     }
 
     /**
      * Disable UI elements while performing async HTTP request
+     *
      * @param value False - Enable elements, True - Disable elements
      */
-    private void disableElements(Boolean value)
-    {
+    private void disableElements(Boolean value) {
         urlTextField.setDisable(value);
         sendButton.setDisable(value);
     }
@@ -96,7 +152,7 @@ public class Controller {
             protected Boolean call() throws Exception {
                 try {
                     CloseableHttpResponse httpResponse = HttpsRequest.httpGetRequest(getUrlTextField());
-                    Platform.runLater(()->{
+                    Platform.runLater(() -> {
                         setResponseCodeText(httpResponse.getStatusLine().toString());
                         try {
                             setResponseContentText(HttpsRequest.getString(httpResponse));
@@ -111,10 +167,10 @@ public class Controller {
                 return true;
             }
         };
-        task.setOnSucceeded( event -> {
+        task.setOnSucceeded(event -> {
             disableElements(false);
         });
-        task.setOnFailed( event -> {
+        task.setOnFailed(event -> {
             disableElements(false);
         });
 
@@ -124,21 +180,34 @@ public class Controller {
 
     }
 
-    public void createStation()
-    {
-        try
-        {
-            Station station = new Station(protocolComboBox.getValue().toString(),ipTextArea.getText(),Integer.parseInt(stationIdTextArea.getText()));
+    public void createStation() {
+        try {
+            Station station = new Station(protocolComboBox.getValue().toString(), ipTextArea.getText(), Integer.parseInt(stationIdTextArea.getText()));
             simulator.addStation(station);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+            ipTextArea.clear();
+            stationIdTextArea.clear();
+        } catch (Exception e) {
+            createDialogERR();
             return;
         }
+    }
 
+    public void checkAccess() {
+        Station station = simulator.getStation(Integer.parseInt(selectedStationLabel.getText()));
+        Pair<Boolean, String> result = station.checkAccess(rfidCheckAccessTextField.getText(), pinCheckAccessTextField.getText());
+        if (result.getValue0()) {
+            createDialogOK();
+        } else {
+            createDialogNO();
+        }
+        responseContent.setText(result.getValue1());
+    }
 
-
+    public void updateStationUsers()
+    {
+        Station station = simulator.getStation(Integer.parseInt(selectedStationLabel.getText()));
+        Pair<Integer,String> result = station.updateStationsUser();
+        responseContent.setText(result.getValue1());
     }
 
 }

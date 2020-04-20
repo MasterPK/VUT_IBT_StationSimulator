@@ -12,7 +12,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.javatuples.Pair;
 import org.jetbrains.annotations.NotNull;
+
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,11 +23,35 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 public interface HttpsRequest {
-    static CloseableHttpResponse httpGetRequest(String uri) throws KeyStoreException, NoSuchAlgorithmException, IOException, KeyManagementException {
-        return httpGetResponse(uri);
+    static CloseableHttpResponse httpGetRequest(String uri) {
+        try {
+            return httpGetResponse(uri);
+        }catch (Exception e)
+        {
+            System.err.println(e.getMessage());
+            return null;
+        }
     }
-    static String httpGetRequestWithResponse(String uri) throws KeyStoreException, NoSuchAlgorithmException, IOException, KeyManagementException {
-        return getString(httpGetResponse(uri));
+
+    static String httpGetRequestWithResponse(String uri) {
+        try {
+            return getString(httpGetResponse(uri));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+
+    }
+
+    static Pair<String,String> httpGetRequestWithResponse(String uri,Boolean old) {
+        try {
+            CloseableHttpResponse response = httpGetResponse(uri);
+            return new Pair<String,String>(response.getStatusLine().toString(),getString(response));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+
     }
 
     static CloseableHttpResponse httpGetResponse(String uri) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException {

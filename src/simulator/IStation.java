@@ -1,5 +1,7 @@
 package simulator;
 
+import org.javatuples.*;
+
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -33,6 +35,8 @@ public interface IStation {
 
     void setUsers(List<User> users);
 
-    boolean checkAccess(String rfid, String pin);
-    void updateStationsUser() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, IOException;
+    boolean checkAccess(String rfid);
+
+    public Pair<Boolean,String> checkAccess(String rfid, String pin);
+    public Pair<Integer, String> updateStationsUser();
 }
