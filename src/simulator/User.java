@@ -5,16 +5,16 @@ import java.util.List;
 
 public class User {
     private String rfid;
-    private Integer permission;
+    private long permission;
     private String pin;
 
-    public User(String rfid, Integer permission)
+    public User(String rfid, long permission)
     {
         setRfid(rfid);
         setPermission(permission);
-        setPin(new String());
+        setPin("");
     }
-    public User(String rfid, Integer permission, String pin)
+    public User(String rfid, long permission, String pin)
     {
         setRfid(rfid);
         setPermission(permission);
@@ -29,11 +29,11 @@ public class User {
         return rfid;
     }
 
-    public Integer getPermission() {
+    public long getPermission() {
         return permission;
     }
 
-    public void setPermission(Integer permission) {
+    public void setPermission(long permission) {
         this.permission = permission;
     }
 

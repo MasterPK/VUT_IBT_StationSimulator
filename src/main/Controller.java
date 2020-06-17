@@ -1,40 +1,42 @@
-package sample;
+package main;
 
 import http.HttpsRequest;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
+import json.JSONLoader;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.javatuples.Pair;
-import simulator.Simulator;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import simulator.StationsList;
 import simulator.Station;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Controller {
     public VBox responseVBox;
     public Label responseCodeLabel;
     public TextArea responseContentLabel;
     public Button sendButton;
-    public ComboBox protocolComboBox;
-    public TextField ipTextArea;
-    public TextField stationIdTextArea;
+    public ComboBox stationComboBox;
     public TextField urlTextField = new TextField();
-    public ListView<Station> listView;
     public Label selectedStationLabel;
 
     private TextField responseCode = new TextField();
     private TextField responseContent = new TextField();
     public TextField rfidCheckAccessTextField;
+
+    private Station selectedStation;
 
     private void setResponseCodeText(String responseCode) {
         this.responseCode.setText(responseCode);
@@ -48,7 +50,7 @@ public class Controller {
         return this.urlTextField.getText();
     }
     public TextField pinCheckAccessTextField;
-    private Simulator simulator = new Simulator("", "");
+    private StationsList stationsList = new StationsList();
 
     public static void createDialogERR() {
         ButtonType loginButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
@@ -81,56 +83,53 @@ public class Controller {
     private void initialize() throws InterruptedException {
         this.responseCode.textProperty().bindBidirectional(this.responseCodeLabel.textProperty());
         this.responseContent.textProperty().bindBidirectional(this.responseContentLabel.textProperty());
-        /*slider1.valueProperty().addListener((observableValue, oldValue, newValue) ->
-        {
-            if (newValue == null) {
-                return;
-            }
-            Integer tmpI = newValue.intValue();
-            value.setText(tmpI.toString());
 
-        });*/
-        List<String> list = new ArrayList<String>();
-        list.add("HTTP");
-        list.add("HTTPS");
-        ObservableList<String> protocolList = FXCollections.observableList(list);
-        protocolComboBox.setItems(protocolList);
-        listView.setItems(simulator.stations);
-        listView.setCellFactory(param -> new ListCell<Station>() {
+        JSONArray data=new JSONArray();
+        try {
+            data = JSONLoader.parseArray(HttpsRequest.httpGetRequestWithResponse("https://192.168.1.103/api/v1/station/all?userToken=x5px4jmfcap0dpo9"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        for (JSONObject loadedStation:(Iterable<JSONObject>)data) {
+            if(((String) loadedStation.get("apiToken")).equals("")){
+                continue;
+            }
+            Station newStation= new Station((String) loadedStation.get("apiToken"),"192.168.1.103", (String) loadedStation.get("name"));
+            this.stationsList.addStation(newStation);
+        }
+
+        stationComboBox.setItems(FXCollections.observableArrayList(this.stationsList.getStations()));
+
+        Callback<ListView<Station>, ListCell<Station>> cellFactory = new Callback<ListView<Station>, ListCell<Station>>() {
+
             @Override
-            protected void updateItem(Station item, boolean empty) {
-                super.updateItem(item, empty);
+            public ListCell<Station> call(ListView<Station> l) {
+                return new ListCell<Station>() {
 
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getId().toString());
-                }
+                    @Override
+                    protected void updateItem(Station item, boolean empty) {
+                        super.updateItem(item, empty);
+
+                        if (empty || item == null) {
+                            setText(null);
+                        } else {
+                            setText(item.getName());
+                        }
+                    }
+                };
             }
-        });
-        listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        ObservableList<Station> stations = listView.getSelectionModel().getSelectedItems();
+        };
 
-        StringProperty stationIdProperty = new SimpleStringProperty("No station selected!");
+        stationComboBox.setCellFactory(cellFactory);
+        stationComboBox.setButtonCell(cellFactory.call(null));
+        stationComboBox.getSelectionModel().select(0);
+        stationComboBoxAction(null);
+        this.selectedStation=(Station)this.stationComboBox.getSelectionModel().getSelectedItem();
+    }
 
-        stations.addListener(new ListChangeListener<Station>() {
-            @Override
-            public void onChanged(Change<? extends Station> c) {
-                if (c.getList().isEmpty()) {
-                    stationIdProperty.setValue("No station selected!");
-                } else if (c.getList().size() > 1) {
-                    stationIdProperty.setValue("Error: Multiple stations selected!");
-                } else {
-                    stationIdProperty.setValue(c.getList().get(0).getId().toString());
-                }
-            }
-        });
-        selectedStationLabel.textProperty().bindBidirectional(stationIdProperty);
-
-        Station station = new Station("https","192.168.1.11",1);
-        simulator.addStation(station);
-        station = new Station("https","192.168.1.11",2);
-        simulator.addStation(station);
+    public void stationComboBoxAction(ActionEvent event){
+        Platform.runLater(() -> this.selectedStationLabel.textProperty().setValue("Selected station:  "+((Station)this.stationComboBox.getSelectionModel().getSelectedItem()).getName()));
+        this.selectedStation=(Station)this.stationComboBox.getSelectionModel().getSelectedItem();
     }
 
     /**
@@ -180,21 +179,8 @@ public class Controller {
 
     }
 
-    public void createStation() {
-        try {
-            Station station = new Station(protocolComboBox.getValue().toString(), ipTextArea.getText(), Integer.parseInt(stationIdTextArea.getText()));
-            simulator.addStation(station);
-            ipTextArea.clear();
-            stationIdTextArea.clear();
-        } catch (Exception e) {
-            createDialogERR();
-            return;
-        }
-    }
-
     public void checkAccess() {
-        Station station = simulator.getStation(Integer.parseInt(selectedStationLabel.getText()));
-        Pair<Boolean, String> result = station.checkAccess(rfidCheckAccessTextField.getText(), pinCheckAccessTextField.getText());
+        Pair<Boolean, String> result = this.selectedStation.checkAccess(rfidCheckAccessTextField.getText(), pinCheckAccessTextField.getText());
         if (result.getValue0()) {
             createDialogOK();
         } else {
@@ -205,8 +191,7 @@ public class Controller {
 
     public void updateStationUsers()
     {
-        Station station = simulator.getStation(Integer.parseInt(selectedStationLabel.getText()));
-        Pair<Integer,String> result = station.updateStationsUser();
+        Pair<Integer,String> result = this.selectedStation.updateStationsUser();
         responseContent.setText(result.getValue1());
     }
 

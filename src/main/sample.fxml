@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane hgap="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="501.0" prefWidth="900.0" styleClass="body" vgap="10.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+<GridPane xmlns:fx="http://javafx.com/fxml/1" hgap="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="501.0" prefWidth="900.0" styleClass="body" vgap="10.0" xmlns="http://javafx.com/javafx/10.0.2-internal" fx:controller="main.Controller">
     <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
             <Tab text="Manual Request">
@@ -34,7 +34,7 @@
                     </AnchorPane>
                 </content>
             </Tab>
-            <Tab fx:id="automaticRequestTab" text="Station management">
+            <Tab fx:id="automaticRequestTab" text="Stations">
                 <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                         <children>
@@ -42,41 +42,16 @@
                                 <children>
                                     <FlowPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWrapLength="900.0">
                                         <children>
-                                            <Label text="Protocol:">
+                                            <Label text="Select station:">
                                                 <FlowPane.margin>
                                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                 </FlowPane.margin>
                                             </Label>
-                                            <ComboBox fx:id="protocolComboBox" prefWidth="150.0" promptText="Select protocol...">
+                                            <ComboBox fx:id="stationComboBox" onAction="#stationComboBoxAction" prefWidth="250.0" promptText="Select station...">
                                                 <FlowPane.margin>
                                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                 </FlowPane.margin>
                                             </ComboBox>
-                                            <Label layoutX="20.0" layoutY="24.0" text="IP Address:">
-                                                <FlowPane.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                                </FlowPane.margin>
-                                            </Label>
-                                            <TextField fx:id="ipTextArea">
-                                                <FlowPane.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                                </FlowPane.margin>
-                                            </TextField>
-                                            <Label layoutX="288.0" layoutY="24.0" text="Station Id:">
-                                                <FlowPane.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                                </FlowPane.margin>
-                                            </Label>
-                                            <TextField fx:id="stationIdTextArea" layoutX="367.0" layoutY="20.0">
-                                                <FlowPane.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                                </FlowPane.margin>
-                                            </TextField>
-                                            <Button mnemonicParsing="false" onAction="#createStation" text="Create new station">
-                                                <FlowPane.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                                </FlowPane.margin>
-                                            </Button>
                                         </children>
                                         <VBox.margin>
                                             <Insets />
@@ -84,12 +59,10 @@
                                     </FlowPane>
                            <FlowPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                               <children>
-                                 <Label text="Selected station:">
+                                 <Label fx:id="selectedStationLabel">
                                     <FlowPane.margin>
                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                    </FlowPane.margin>
-                                 </Label>
-                                 <Label fx:id="selectedStationLabel" />
+                                    </FlowPane.margin></Label>
                                  <Button mnemonicParsing="false" onAction="#updateStationUsers" text="Update users">
                                     <FlowPane.margin>
                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -129,15 +102,6 @@
                             </VBox>
                         </children>
                     </AnchorPane>
-                </content>
-            </Tab>
-            <Tab text="Select station">
-                <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                  <children>
-                     <ListView fx:id="listView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
-                  </children>
-                </AnchorPane>
                 </content>
             </Tab>
         </tabs>
